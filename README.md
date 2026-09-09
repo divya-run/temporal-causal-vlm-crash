@@ -1,6 +1,6 @@
 # Diagnosing and Repairing Temporal-Causal Reasoning Failures in Compact VLMs for Roadside Crash Understanding
 
-**Team Members:** [Divya Rajasekar],[Claude]
+**Team Members:** Divya Rajasekar,Claude
 
 **Selected Track:** Research Track (frontier question: VLM reasoning) + Safety & Evaluation Track (targeted failure-mode analysis, edge-deployable monitoring)
 
