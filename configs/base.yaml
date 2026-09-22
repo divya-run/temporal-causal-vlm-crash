@@ -1,0 +1,41 @@
+# Base configuration for the temporal-causal VLM crash-understanding project.
+# Individual experiments (frame budget x sampling strategy combos) override
+# the `sampling` and `frame_budget` fields via configs/experiments/*.yaml.
+
+model:
+  name: "Qwen/Qwen2.5-VL-3B-Instruct"
+  dtype: "bfloat16"        # full-precision reference run (cloud GPU)
+  device: "cuda"
+
+data:
+  crashsight_root: "data/crashsight"      # videos/, qa.json — see src/data/crashsight.py
+  split: "test"                            # test | val
+  tiers: ["tier1_perception", "tier2_event", "tier3_inference"]
+
+sampling:
+  strategy: "uniform"        # uniform | impact_centered | phase_based
+  frame_budget: 8             # number of frames sampled per clip
+
+prompting:
+  mode: "plain"                # plain | structured_temporal
+  # structured_temporal inserts explicit phase labels
+  # (pre-crash / conflict / collision / aftermath) alongside sampled frames.
+
+probe:
+  temporal_order_shuffle: true
+  temporal_order_reverse: true
+
+lora:
+  enabled: false               # stretch goal — only after eval pipeline is verified end-to-end
+  rank: 16
+  alpha: 32
+  target_modules: ["q_proj", "v_proj"]
+
+edge:
+  target_device: "jetson_orin_nano_super_8gb"
+  quantization: ["fp16", "int8", "int4"]
+  measure: ["accuracy", "latency_ms", "peak_memory_mb", "fps"]
+
+output:
+  results_dir: "results"
+  log_predictions: true

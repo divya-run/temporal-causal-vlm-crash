@@ -42,15 +42,44 @@ Post-quantization accuracy retention (4-bit/8-bit) and on-device inference laten
 
 ## Proposed Technical Approach
 
-Baseline & diagnosis: Evaluate a compact open VLM (Qwen2.5-VL, ~3B parameters) zero-shot on CrashSight's Tier 2 questions; reproduce the benchmark's error taxonomy on our model specifically.
+**Revised scope (per instructor feedback):** since a Jetson Orin Nano Super 8GB is available, edge deployment is the core of the study rather than a final validation step. The main intervention is structured temporal prompting (lightweight, no training); LoRA fine-tuning is a stretch goal attempted only once the inference/evaluation pipeline is fully working.
 
-Root-cause probe: Apply the RiskCueBench frame-shuffle/reverse test to the same questions to quantify how much of the failure is due to lack of genuine temporal reasoning versus other causes.
+1. **Baseline & diagnosis** (unchanged): Evaluate Qwen2.5-VL (~3B) zero-shot on CrashSight's Tier 2 questions, plain prompting, uniform sampling; reproduce the benchmark's error taxonomy on our model specifically. → `scripts/01_baseline_diagnosis.py`
 
-Intervention: Implement one lightweight fix targeted at the diagnosed cause — either (a) explicit phase-conditioned prompting using CrashSight's four annotated crash phases (pre-crash, collision dynamics, aftermath, causes), or (b) a LoRA fine-tune using phase labels as auxiliary supervision.
+2. **Root-cause probe** (unchanged): Apply the RiskCueBench frame-shuffle/reverse test to quantify how much of the failure is due to lack of genuine temporal reasoning versus other causes. Reused as a metric across every condition below, not just a one-time diagnostic. → `src/eval/metrics.py::temporal_order_sensitivity`
 
-Edge validation: Quantize the resulting model to 4-bit/8-bit and deploy on the team's NVIDIA Jetson, measuring accuracy retention, latency, and memory footprint.
+3. **Core experiment — frame budget × sampling strategy, on Jetson:** compare three sampling strategies (`uniform`, `impact_centered`, `phase_based`) at several frame budgets (e.g. 4 / 8 / 16), measuring crash-question accuracy, temporal-order sensitivity, latency, and peak memory directly on the Jetson. Structured temporal prompting (phase-labeled frames) is the main lightweight intervention layered on top. → `src/sampling/strategies.py`, `src/prompting/templates.py`, `src/edge/`
 
-Deliverables: Reproducible codebase, experiment logs comparing baseline vs. intervention, and a written failure/success analysis suitable for workshop submission.
+4. **LoRA (stretch)**: only attempted once steps 1–3 run end-to-end. → `src/lora/`
+
+5. **Goal**: identify the smallest temporal representation (frame budget + sampling strategy) that preserves useful causal reasoning while remaining practical on an 8GB edge device.
+
+Deliverables: Reproducible codebase, experiment logs comparing all frame-budget × sampling-strategy × prompting-mode combinations, and a written analysis suitable for workshop submission.
+
+## Repo Structure
+
+```
+src/
+  data/         CrashSight dataset loader
+  sampling/     uniform / impact_centered / phase_based frame sampling
+  prompting/    plain vs. structured_temporal prompt construction
+  inference/    Qwen2.5-VL wrapper (shared by cloud-GPU and Jetson runs)
+  eval/         accuracy + temporal-order sensitivity metrics
+  edge/         Jetson quantization & latency/memory benchmarking (TODO)
+  lora/         stretch-goal fine-tuning (TODO, gated on pipeline completion)
+configs/        experiment configs (base.yaml + per-experiment overrides)
+scripts/        entry points, e.g. 01_baseline_diagnosis.py
+tests/          unit tests for sampling/prompting logic (no GPU required)
+```
+
+## Getting Started
+
+```bash
+pip install -r requirements.txt
+pytest tests/                      # sanity-check sampling & prompting logic, no GPU/data needed
+# then: download CrashSight into data/crashsight/ (see src/data/crashsight.py for expected layout)
+python scripts/01_baseline_diagnosis.py --config configs/base.yaml
+```
 
 Device & Maintainer
 

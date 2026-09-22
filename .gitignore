@@ -1,0 +1,28 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Data (large, download separately — see README)
+data/
+
+# Results / logs
+results/
+*.log
+runs/
+
+# Model weights / checkpoints
+*.pt
+*.safetensors
+checkpoints/
+lora_adapters/
+
+# Env
+.venv/
+venv/
+.env
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/

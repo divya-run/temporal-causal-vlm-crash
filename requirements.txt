@@ -1,0 +1,31 @@
+# Core
+torch>=2.2
+transformers>=4.49
+accelerate>=0.34
+qwen-vl-utils
+pillow
+numpy
+pandas
+pyyaml
+tqdm
+
+# Video / frame extraction
+opencv-python-headless
+decord
+
+# Quantization (used on Jetson / for edge eval; install per-platform on device)
+bitsandbytes ; platform_system != "Linux" or platform_machine != "aarch64"
+# On Jetson (aarch64), prefer TensorRT / onnxruntime-gpu built for JetPack instead of bitsandbytes.
+onnxruntime-gpu ; platform_machine == "aarch64"
+
+# Eval / stats
+scikit-learn
+scipy
+
+# Experiment tracking (lightweight, no external service required)
+tensorboard
+
+# Dev
+pytest
+black
+ruff
