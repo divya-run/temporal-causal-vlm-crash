@@ -42,6 +42,13 @@ Post-quantization accuracy retention (4-bit/8-bit) and on-device inference laten
 
 ## Proposed Technical Approach
 
+## ⚠️ Data availability (check before relying on this timeline)
+
+As of this writing, [CrashSight-VQA's repo](https://github.com/mcgrche/CrashSight-VQA) has code and a README but its **Quick Start section (data download + inference instructions) is a placeholder** — the dataset is not yet publicly downloadable, despite the paper stating it's "accessible." Confirmed from the paper directly: a **two-tier taxonomy** — Tier 1 (visual grounding: Scene Identification, Involved Parties) and Tier 2 (forensic reasoning: Crash Mechanics, Fault Determination, Temporal Sequence, causal attribution, post-crash outcomes) — reflected in `src/data/crashsight.py`. Recommend checking the repo periodically or opening an issue asking for a release timeline, and having a fallback dataset decided before this becomes a deadline risk.
+
+**Relevant validation for the revised scope:** the paper's own [FUTURE_WORKS.md](https://github.com/mcgrche/CrashSight-VQA/blob/main/FUTURE_WORKS.md) names "Adaptive Visual Token Budgets" — event-driven key frame selection, adaptive sampling concentrated around pre-crash/impact intervals — as its #1 open direction. That's essentially this project's core experiment (below), which is useful framing for novelty.
+
+
 **Revised scope (per instructor feedback):** since a Jetson Orin Nano Super 8GB is available, edge deployment is the core of the study rather than a final validation step. The main intervention is structured temporal prompting (lightweight, no training); LoRA fine-tuning is a stretch goal attempted only once the inference/evaluation pipeline is fully working.
 
 1. **Baseline & diagnosis** (unchanged): Evaluate Qwen2.5-VL (~3B) zero-shot on CrashSight's Tier 2 questions, plain prompting, uniform sampling; reproduce the benchmark's error taxonomy on our model specifically. → `scripts/01_baseline_diagnosis.py`

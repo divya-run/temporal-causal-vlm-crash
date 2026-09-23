@@ -10,7 +10,14 @@ model:
 data:
   crashsight_root: "data/crashsight"      # videos/, qa.json — see src/data/crashsight.py
   split: "test"                            # test | val
-  tiers: ["tier1_perception", "tier2_event", "tier3_inference"]
+  # Confirmed two-tier taxonomy (see src/data/crashsight.py) — categories of
+  # interest for this project's causal/temporal focus are the tier2 ones.
+  categories:
+    - crash_mechanics
+    - fault_determination
+    - temporal_sequence
+    - causal_attribution
+    - post_crash_outcomes
 
 sampling:
   strategy: "uniform"        # uniform | impact_centered | phase_based

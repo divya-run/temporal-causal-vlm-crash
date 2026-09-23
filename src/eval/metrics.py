@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 @dataclass
 class RunResult:
     clip_id: str
-    tier: str
+    category: str  # e.g. "crash_mechanics", "temporal_sequence" — see src/data/crashsight.py
     predicted_letter: str | None
     correct_letter: str
     latency_ms: float
@@ -20,9 +20,23 @@ class RunResult:
     shuffled_predicted_letter: str | None = None
     reversed_predicted_letter: str | None = None
 
+    @property
+    def tier(self) -> str:
+        from src.data.crashsight import TIER1_CATEGORIES, TIER2_CATEGORIES
 
-def accuracy(results: list[RunResult], tier: str | None = None) -> float:
-    subset = [r for r in results if tier is None or r.tier == tier]
+        if self.category in TIER1_CATEGORIES:
+            return "tier1"
+        if self.category in TIER2_CATEGORIES:
+            return "tier2"
+        return "unknown"
+
+
+def accuracy(results: list[RunResult], tier: str | None = None, category: str | None = None) -> float:
+    subset = results
+    if tier is not None:
+        subset = [r for r in subset if r.tier == tier]
+    if category is not None:
+        subset = [r for r in subset if r.category == category]
     if not subset:
         return float("nan")
     correct = sum(1 for r in subset if r.predicted_letter == r.correct_letter)

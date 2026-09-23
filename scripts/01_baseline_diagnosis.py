@@ -47,7 +47,7 @@ def main(config_path: str) -> None:
     dataset = CrashSightDataset(
         root=cfg["data"]["crashsight_root"],
         split=cfg["data"]["split"],
-        tiers=cfg["data"]["tiers"],
+        categories=cfg["data"]["categories"],
     )
     print(f"Loaded {len(dataset)} QA items from CrashSight ({cfg['data']['split']} split).")
 
@@ -78,7 +78,7 @@ def main(config_path: str) -> None:
         results.append(
             RunResult(
                 clip_id=item.clip_id,
-                tier=item.tier,
+                category=item.category,
                 predicted_letter=response.predicted_letter,
                 correct_letter=correct_letter,
                 latency_ms=response.latency_ms,
@@ -91,8 +91,10 @@ def main(config_path: str) -> None:
 
     summary = {
         "overall_accuracy": accuracy(results),
-        "per_tier_accuracy": {
-            tier: accuracy(results, tier=tier) for tier in cfg["data"]["tiers"]
+        "tier1_accuracy": accuracy(results, tier="tier1"),
+        "tier2_accuracy": accuracy(results, tier="tier2"),
+        "per_category_accuracy": {
+            cat: accuracy(results, category=cat) for cat in cfg["data"]["categories"]
         },
     }
     (out_dir / "baseline_summary.json").write_text(json.dumps(summary, indent=2))
